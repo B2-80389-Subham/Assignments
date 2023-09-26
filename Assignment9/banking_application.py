@@ -76,6 +76,7 @@ my_bank.add_account(account3)
 my_bank.add_account(account4)
 my_bank.add_account(account5)
 
+
 while True:
     print("\nBanking Application Menu:")
     print("1. Print Bank Information")
@@ -121,4 +122,3 @@ while True:
         break
     else:
         print("Invalid choice. Please enter a valid option.")
-
