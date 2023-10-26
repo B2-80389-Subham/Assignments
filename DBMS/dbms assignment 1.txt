@@ -1,0 +1,230 @@
+1. create database spj;
+   use spj;
+   
+   a> Table S:
+
+   create table s(`s#` char(5) not null, Sname char(20), status smallint, city char(15));
+   show columns from s;
+   insert into s
+    -> values("s1","Smith",20,"london"),
+    -> ("s2","Jones",10,"Paris"),
+    -> ("s3","Blake",30,"Paris"),
+    -> ("s4","Clark",20,"london"),
+    -> ("s5","Adams",20,"Athens");
+    
+select * from s;
++----+-------+--------+--------+
+| s# | Sname | status | city   |
++----+-------+--------+--------+
+| s1 | Smith |     20 | london |
+| s2 | Jones |     10 | Paris  |
+| s3 | Blake |     30 | Paris  |
+| s4 | Clark |     20 | london |
+| s5 | Adams |     20 | Athens |
++----+-------+--------+--------+
+
+
+
+   b> TABLE P:
+
+   create table p(`p#` char(5) not null, Pname char(20),Color char(6),Weight smallint, City char(15));
+
+insert into p
+    -> values("p1","Nut","Red",12,"london"),
+    -> ("p2","Bolt","Green",17,"Paris"),
+    -> ("p3","Screw","Blue",17,"Rome"),
+    -> ("p4","Screw","Red",14,"London"),
+    -> ("p5","Cam","Blue",12,"Paris"),
+    -> ("p6","Cog","Red",19,"London");
+
+
+ select * from p;
+
++----+-------+-------+--------+--------+
+| p# | Pname | Color | Weight | City   |
++----+-------+-------+--------+--------+
+| p1 | Nut   | Red   |     12 | london |
+| p2 | Bolt  | Green |     17 | Paris  |
+| p3 | Screw | Blue  |     17 | Rome   |
+| p4 | Screw | Red   |     14 | London |
+| p5 | Cam   | Blue  |     12 | Paris  |
+| p6 | Cog   | Red   |     19 | London |
++----+-------+-------+--------+--------+
+
+
+C> TABLE j:
+
+
+create table j(`j#` char(4) not null , Jname char(20),City char(15));
+
+insert into j
+    -> values("j1","Sorter","Paris"),
+    -> ("j2","Punch","Rome"),
+    -> ("j3","Reader","Athens"),
+    -> ("j4","Console","Athens"),
+    -> ("j5","Collator","London"),
+    -> ("j6","Terminal","oslo"),
+    -> ("j7","Tape","London");
+
+
+select * from j;
++----+----------+--------+
+| j# | Jname    | City   |
++----+----------+--------+
+| j1 | Sorter   | Paris  |
+| j2 | Punch    | Rome   |
+| j3 | Reader   | Athens |
+| j4 | Console  | Athens |
+| j5 | Collator | London |
+| j6 | Terminal | oslo   |
+| j7 | Tape     | London |
++----+----------+--------+
+
+
+
+d> TABLE SP:
+
+create table sp (`S#` char(4) not null, `P#` char(4) not null,`J#` char(4) not null, QTY int);
+
+ show columns from sp;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| S#    | char(4) | NO   |     | NULL    |       |
+| P#    | char(4) | NO   |     | NULL    |       |
+| J#    | char(4) | NO   |     | NULL    |       |
+| QTY   | int     | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+
+
+ insert into sp
+    -> values("S1","P1","J1" , 200),
+    -> ("S1","P1","J4", 700),
+    -> ("S2","P3","J1", 400),
+    -> ("S2","P3","J2", 200),
+    -> ("S2","P3","J3", 200),
+    -> ("S2","P3","J4", 500),
+    -> ("S2","P3","J5", 600),
+    -> ("S2","P3","J6", 400),
+    -> ("S2","P3","J7", 800),
+    -> ("S2","P5","J2", 100),
+    -> ("S3","P3","J1", 200),
+    -> ("S3","P4","J2", 500),
+    -> ("S4","P6","J3", 300),
+    -> ("S4","P6","J7", 300),
+    -> ("S5","P2","J2", 200),
+    -> ("S5","P2","J4", 100),
+    -> ("S5","P5","J5", 500),
+    -> ("S5","P5","J7", 100),
+    -> ("S5","P6","J2", 200),
+    -> ("S5","P1","J4", 100),
+    -> ("S5","P3","J4", 200),
+    -> ("S5","P4","J4", 800),
+    -> ("S5","P5","J4", 400),
+    -> ("S5","P6","J4", 500);
+
+
+
+select * from sp;
++----+----+----+------+
+| S# | P# | J# | QTY  |
++----+----+----+------+
+| S1 | P1 | J1 |  200 |
+| S1 | P1 | J4 |  700 |
+| S2 | P3 | J1 |  400 |
+| S2 | P3 | J2 |  200 |
+| S2 | P3 | J3 |  200 |
+| S2 | P3 | J4 |  500 |
+| S2 | P3 | J5 |  600 |
+| S2 | P3 | J6 |  400 |
+| S2 | P3 | J7 |  800 |
+| S2 | P5 | J2 |  100 |
+| S3 | P3 | J1 |  200 |
+| S3 | P4 | J2 |  500 |
+| S4 | P6 | J3 |  300 |
+| S4 | P6 | J7 |  300 |
+| S5 | P2 | J2 |  200 |
+| S5 | P2 | J4 |  100 |
+| S5 | P5 | J5 |  500 |
+| S5 | P5 | J7 |  100 |
+| S5 | P6 | J2 |  200 |
+| S5 | P1 | J4 |  100 |
+| S5 | P3 | J4 |  200 |
+| S5 | P4 | J4 |  800 |
+| S5 | P5 | J4 |  400 |
+| S5 | P6 | J4 |  500 |
++----+----+----+------+
+
+
+2. create database hr;
+   use hr;
+   source C:\Users\subha\OneDrive\Desktop\DBMS\DBMS\db\hr-db.sql
+   
+show tables from hr;
+
++--------------+
+| Tables_in_hr |
++--------------+
+| countries    |
+| departments  |
+| employees    |
+| job_history  |
+| jobs         |
+| locations    |
+| regions      |
++--------------+
+
+
+sales:
+
+
+use sales;
+source C:\Users\subha\OneDrive\Desktop\DBMS\DBMS\db\sales-db.sql
+
+show tables from sales;
+
++-----------------+
+| Tables_in_sales |
++-----------------+
+| customers       |
+| orders          |
+| salespeople     |
++-----------------+
+
+
+*******************************************************************************************
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
