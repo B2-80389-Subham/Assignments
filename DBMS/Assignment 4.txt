@@ -1,0 +1,175 @@
+1.
+
+select Pname , color from p
+    -> where city = 'london';
++-------+-------+
+| Pname | color |
++-------+-------+
+| Nut   | Red   |
+| Screw | Red   |
+| Cog   | Red   |
++-------+-------+
+
+2.
+
+select Sname from S
+    -> where city in('paris','london');
++-------+
+| Sname |
++-------+
+| Smith |
+| Jones |
+| Blake |
+| Clark |
++-------+
+
+3.
+
+ select * from j
+    -> where city in ('paris','athens');
++----+---------+--------+
+| j# | Jname   | City   |
++----+---------+--------+
+| j1 | Sorter  | Paris  |
+| j3 | Reader  | Athens |
+| j4 | Console | Athens |
++----+---------+--------+
+
+4.
+
+ select * from j
+    -> where city = 'athens';
++----+---------+--------+
+| j# | Jname   | City   |
++----+---------+--------+
+| j3 | Reader  | Athens |
+| j4 | Console | Athens |
++----+---------+--------+
+
+
+5.
+
+
+mysql> select * from p
+    -> where weight between 12 and 14;
++----+-------+-------+--------+--------+
+| p# | Pname | Color | Weight | City   |
++----+-------+-------+--------+--------+
+| p1 | Nut   | Red   |     12 | london |
+| p4 | Screw | Red   |     14 | London |
+| p5 | Cam   | Blue  |     12 | Paris  |
++----+-------+-------+--------+--------+
+
+6.
+
+select * from s
+    -> where status >= 20;
++----+-------+--------+--------+
+| s# | Sname | status | city   |
++----+-------+--------+--------+
+| s1 | Smith |     20 | london |
+| s3 | Blake |     30 | Paris  |
+| s4 | Clark |     20 | london |
+| s5 | Adams |     20 | Athens |
++----+-------+--------+--------+
+
+
+7.
+
+ select sname from s
+    -> where city != 'london';
++-------+
+| sname |
++-------+
+| Jones |
+| Blake |
+| Adams |
++-------+
+
+
+8.
+
+select city from s
+    -> ;
++--------+
+| city   |
++--------+
+| london |
+| Paris  |
+| Paris  |
+| london |
+| Athens |
++--------+
+
+
+9.
+
+select * from s
+    -> order by city desc;
++----+-------+--------+--------+
+| s# | Sname | status | city   |
++----+-------+--------+--------+
+| s2 | Jones |     10 | Paris  |
+| s3 | Blake |     30 | Paris  |
+| s1 | Smith |     20 | london |
+| s4 | Clark |     20 | london |
+| s5 | Adams |     20 | Athens |
++----+-------+--------+--------+
+
+
+10.
+
+ select * from p
+    -> order by city,pname;
++----+-------+-------+--------+--------+
+| p# | Pname | Color | Weight | City   |
++----+-------+-------+--------+--------+
+| p6 | Cog   | Red   |     19 | London |
+| p1 | Nut   | Red   |     12 | london |
+| p4 | Screw | Red   |     14 | London |
+| p2 | Bolt  | Green |     17 | Paris  |
+| p5 | Cam   | Blue  |     12 | Paris  |
+| p3 | Screw | Blue  |     17 | Rome   |
++----+-------+-------+--------+--------+
+
+11.
+
+ select * from p
+    -> order by city,pname desc;
++----+-------+-------+--------+--------+
+| p# | Pname | Color | Weight | City   |
++----+-------+-------+--------+--------+
+| p4 | Screw | Red   |     14 | London |
+| p1 | Nut   | Red   |     12 | london |
+| p6 | Cog   | Red   |     19 | London |
+| p5 | Cam   | Blue  |     12 | Paris  |
+| p2 | Bolt  | Green |     17 | Paris  |
+| p3 | Screw | Blue  |     17 | Rome   |
++----+-------+-------+--------+--------+
+
+
+12.
+ 
+select pname,weight from p
+    -> where not weight between 10 and 15;
++-------+--------+
+| pname | weight |
++-------+--------+
+| Bolt  |     17 |
+| Screw |     17 |
+| Cog   |     19 |
++-------+--------+
+
+
+**********************************************************************************
+
+
+
+
+
+
+
+
+
+
+
