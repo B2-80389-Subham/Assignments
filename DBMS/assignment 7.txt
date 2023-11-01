@@ -1,0 +1,426 @@
+ 1.Write a query that lists each order number followed by the name of the customer who
+made the order.
+
+
+select c.cname,o.onum from customers as c inner join orders as o on c.cnum=o.cnum;
++----------+------+
+| cname    | onum |
++----------+------+
+| Cisneros | 3001 |
+| Hoffman  | 3003 |
+| Pereira  | 3002 |
+| Liu      | 3005 |
+| Cisneros | 3006 |
+| Giovanni | 3009 |
+| Grass    | 3007 |
+| Clemens  | 3008 |
+| Grass    | 3010 |
+| Clemens  | 3011 |
++----------+------+
+10 rows in set (0.00 sec)
+
+2.Write a query that gives the names of both the salesperson and the customer for
+each order along with the order number.
+
+select t3.sname , t2.cname , t1.onum
+    -> from orders t1
+    -> join customers t2
+    -> on t2.cnum = t1.cnum
+    -> join  salespeople t3
+    -> on t1.snum = t3.snum
+    -> ;
++---------+----------+------+
+| sname   | cname    | onum |
++---------+----------+------+
+| Peel    | Hoffman  | 3003 |
+| Axelrod | Giovanni | 3009 |
+| Serres  | Liu      | 3005 |
+| Serres  | Grass    | 3010 |
+| Serres  | Grass    | 3007 |
+| Peel    | Clemens  | 3011 |
+| Peel    | Clemens  | 3008 |
+| Rifkin  | Cisneros | 3006 |
+| Rifkin  | Cisneros | 3001 |
+| Motika  | Pereira  | 3002 |
++---------+----------+------+
+10 rows in set (0.00 sec)
+
+
+3.Write a query that produces all customers serviced by salespeople with a commission
+above 12%. Output the customer’s name, the salesperson’s name, and the
+salesperson’s rate of commission.
+
+select t3.sname , t2.cname, t3.comm
+    -> from customers t2
+    -> join salespeople t3
+    -> on t2.snum = t3.snum
+    -> where comm > .12
+    -> ;
++--------+----------+------+
+| sname  | cname    | comm |
++--------+----------+------+
+| Serres | Liu      | 0.13 |
+| Serres | Grass    | 0.13 |
+| Rifkin | Cisneros | 0.15 |
++--------+----------+------+
+3 rows in set (0.00 sec)
+
+4. Write a query that calculates the amount of the salesperson’s commission on each
+order by a customer with a rating above 100.
+
+
+select t1.cname , t3.sname , (t2.amt * t3.comm) as comm_percentage
+    -> from customers t1
+    -> right join  orders t2
+    -> on t1.cnum = t2.cnum
+    -> join  salespeople t3
+    -> on t1.snum = t3.snum
+    -> where t1.rating > 100 ;
++----------+---------+-----------------+
+| cname    | sname   | comm_percentage |
++----------+---------+-----------------+
+| Cisneros | Rifkin  |          2.8035 |
+| Liu      | Serres  |        670.8585 |
+| Cisneros | Rifkin  |        164.7240 |
+| Giovanni | Axelrod |        171.3230 |
+| Grass    | Serres  |          9.8475 |
+| Grass    | Serres  |         40.2935 |
++----------+---------+-----------------+
+6 rows in set (0.00 sec)
+
+
+5. Write a query that produces all pairs of salespeople who are living in the same
+city.Exclude combinations of salespeople with themselves as well as duplicate rows
+with the order reversed.
+
+
+select s1.sname , s2.sname as matching_sname
+    -> from  salespeople s1
+    -> join  salespeople s2
+    -> on s1.city = s2.city and s1.snum < s2.snum
+    -> ;
++-------+----------------+
+| sname | matching_sname |
++-------+----------------+
+| Peel  | Motika         |
++-------+----------------+
+1 row in set (0.00 sec)
+
+
+======================================================================================================================================================================================
+
+
+1. Display the Supplier name and the Quantity sold.
+
+
+select `s#` ,sum(qty) as total
+    -> from s
+    -> join sp
+    -> using (`s#`)
+    -> group by `s#` ;
++----+-------+
+| s# | total |
++----+-------+
+| s1 |   900 |
+| s2 |  3200 |
+| s3 |   700 |
+| s4 |   600 |
+| s5 |  3100 |
++----+-------+
+5 rows in set (0.00 sec)
+
+2.Display the Part name and Quantity sold.
+
+select pname ,sum(qty) as total
+    -> from p
+    -> join sp
+    -> using (`p#`)
+    -> group by pname ;
++-------+-------+
+| pname | total |
++-------+-------+
+| Nut   |  1000 |
+| Screw |  4800 |
+| Cam   |  1100 |
+| Cog   |  1300 |
+| Bolt  |   300 |
++-------+-------+
+5 rows in set (0.00 sec)
+
+
+3. Display the Job name and Quantity sold.
+
+
+select jname ,sum(qty) as total
+    -> from j
+    -> join sp
+    -> using (`j#`)
+    -> group by jname ;
++----------+-------+
+| jname    | total |
++----------+-------+
+| Sorter   |   800 |
+| Console  |  3300 |
+| Punch    |  1200 |
+| Reader   |   500 |
+| Collator |  1100 |
+| Terminal |   400 |
+| Tape     |  1200 |
++----------+-------+
+7 rows in set (0.00 sec)
+
+
+4. Display the Supplier name, Part name, Job name and Quantity sold.
+
+ select sname ,pname ,jname,sum(qty) as total
+    -> from j
+    -> join sp
+    -> using (`j#`)
+    -> join p
+    -> using (`p#`)
+    -> join s
+    -> using (`s#`)
+    -> group by sname,pname,jname ;
++-------+-------+----------+-------+
+| sname | pname | jname    | total |
++-------+-------+----------+-------+
+| Jones | Screw | Sorter   |   400 |
+| Blake | Screw | Sorter   |   200 |
+| Smith | Nut   | Sorter   |   200 |
+| Adams | Cog   | Punch    |   200 |
+| Jones | Cam   | Punch    |   100 |
+| Blake | Screw | Punch    |   500 |
+| Jones | Screw | Punch    |   200 |
+| Adams | Bolt  | Punch    |   200 |
+| Clark | Cog   | Reader   |   300 |
+| Jones | Screw | Reader   |   200 |
+| Adams | Cog   | Console  |   500 |
+| Adams | Cam   | Console  |   400 |
+| Adams | Screw | Console  |  1000 |
+| Jones | Screw | Console  |   500 |
+| Adams | Bolt  | Console  |   100 |
+| Smith | Nut   | Console  |   700 |
+| Adams | Nut   | Console  |   100 |
+| Adams | Cam   | Collator |   500 |
+| Jones | Screw | Collator |   600 |
+| Jones | Screw | Terminal |   400 |
+| Clark | Cog   | Tape     |   300 |
+| Adams | Cam   | Tape     |   100 |
+| Jones | Screw | Tape     |   800 |
++-------+-------+----------+-------+
+23 rows in set (0.00 sec)
+
+
+
+
+5. Display the Supplier name, Supplying Parts to a Job in the same City.
+
+----
+
+
+
+
+6. Display the Part name that is ‘Red’ is color, and the Quantity sold.
+
+
+select pname , sum(qty)
+    -> from p
+    -> join sp
+    -> using(`p#`)
+    -> where color = "red"
+    -> group by pname
+    -> ;
++-------+----------+
+| pname | sum(qty) |
++-------+----------+
+| Nut   |     1000 |
+| Screw |     1300 |
+| Cog   |     1300 |
++-------+----------+
+3 rows in set (0.00 sec)
+
+
+7. Display all the Quantity sold by Suppliers with the Status = 20.
+
+select sname,sum(qty) as total
+    -> from s
+    -> join sp
+    -> using (`s#`)
+    -> where status = 20
+    -> group by sname;
++-------+-------+
+| sname | total |
++-------+-------+
+| Smith |   900 |
+| Clark |   600 |
++-------+-------+
+2 rows in set (0.00 sec)
+
+
+8. Display all the Parts and Quantity with a Weight > 14.
+
+select pname,sum(qty) as total
+    -> from p
+    -> join sp
+    -> using (`p#`)
+    -> where weight > 14
+    -> group by pname;
++-------+-------+
+| pname | total |
++-------+-------+
+| Screw |  3500 |
+| Cog   |  1300 |
+| Bolt  |   300 |
++-------+-------+
+3 rows in set (0.00 sec)
+
+9. Display all the Job names and City, which has bought more than 500 Parts.
+
+select t1.jname,t1.city ,sum(qty) as total
+    -> from j t1
+    -> join sp t2
+    -> using (`j#`)
+    -> group by t1.jname, t1.city
+    -> having total > 500;
++----------+--------+-------+
+| jname    | city   | total |
++----------+--------+-------+
+| Sorter   | Paris  |   800 |
+| Console  | Athens |  3300 |
+| Punch    | Rome   |  1200 |
+| Collator | London |  1100 |
+| Tape     | London |  1200 |
++----------+--------+-------+
+5 rows in set (0.00 sec)
+
+
+10. Display all the Part names and Quantity sold that have a Weight less than 15.
+
+select  pname , sum(qty) as total
+    -> from p
+    -> join sp
+    -> using(`p#`)
+    -> where p.Weight < 15
+    -> group by Pname ;
++-------+-------+
+| pname | total |
++-------+-------+
+| Nut   |  1000 |
+| Cam   |  1100 |
+| Screw |  1300 |
++-------+-------+
+3 rows in set (0.00 sec)
+
+11. Display all the Suppliers with the same Status as the supplier, ‘CLARK’.
+
+select  sname
+    -> from s
+    -> join sp
+    -> using(`s#`)
+    -> where status  = 20 and sname <> 'clark'
+    -> group by sname ;
++-------+
+| sname |
++-------+
+| Smith |
++-------+
+1 row in set (0.00 sec)
+
+
+12. Display all the Parts which have more Weight than any Red parts.
+
+
+select p.pname,p.weight,p.color,p1.color
+    -> from p
+    -> inner join p p1
+    -> where p1.color = 'red'
+    -> group by 1,2,3,4
+    -> having p.weight >  min(p1.weight)
+    -> ;
++-------+--------+-------+-------+
+| pname | weight | color | color |
++-------+--------+-------+-------+
+| Bolt  |     17 | Green | Red   |
+| Screw |     17 | Blue  | Red   |
+| Screw |     14 | Red   | Red   |
+| Cog   |     19 | Red   | Red   |
++-------+--------+-------+-------+
+4 rows in set (0.00 sec)
+
+13. Display all the Jobs going on in the same city as the job ‘TAPE’.
+
+select t1.jname
+    -> from j t1
+    -> join j t2
+    -> on t1.city = t2.city
+    -> where t1.city = 'london'
+    -> order by t1.city
+    -> limit 1 offset 1
+    -> ;
++----------+
+| jname    |
++----------+
+| Collator |
++----------+
+1 row in set (0.00 sec)
+
+
+
+
+14. Display all the Parts with Weight less than any the Green parts.
+
+select p.pname,p.color,p.weight,p1.color from p cross join p p1 where p1.color='green' group by p.pname,p.color,p.weight,p1.color having p.weight<max(p1.weight);
++-------+-------+--------+-------+
+| pname | color | weight | color |
++-------+-------+--------+-------+
+| Nut   | Red   |     12 | Green |
+| Screw | Red   |     14 | Green |
+| Cam   | Blue  |     12 | Green |
++-------+-------+--------+-------+
+3 rows in set (0.00 sec)
+
+
+15. Display the name of the Supplier who has sold the maximum Quantity (in onesale).
+
+
+SELECT s.sname, (sp.qty) FROM s s INNER JOIN sp sp ON s.`s#`=sp.`s#` ORDER BY sp.qty DESC LIMIT 1 ;
++-------+------+
+| sname | qty  |
++-------+------+
+| Jones |  800 |
++-------+------+
+1 row in set (0.00 sec)
+
+16. Display the name of the Supplier who has sold the maximum overall Quantity
+(sumof Sales).
+
+SELECT s.sname, SUM(sp.qty) AS Tqty FROM s s INNER JOIN sp sp ON s.`s#`=sp.`s#` GROUP BY s.sname ORDER BY Tqty DESC LIMIT 1;
++-------+------+
+| sname | Tqty |
++-------+------+
+| Jones | 3200 |
++-------+------+
+1 row in set (0.00 sec)
+
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
