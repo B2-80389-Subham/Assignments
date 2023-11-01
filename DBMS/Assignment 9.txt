@@ -1,0 +1,87 @@
+Note : use “sales” database to solve below queries.
+1. Create an index that will enable a user to pull orders for ‘1990-10-03’ out of the
+Orders table quickly.
+
+create index idx_orders on orders(odate);
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+show indexes from orders;
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name   | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| orders |          1 | idx_orders |            1 | odate       | A         |           2 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++--------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+1 row in set (0.00 sec)
+
+
+2. If the Orders table has already been created, how can you force the onum field to be
+unique (assume all current values are unique)?
+
+create unique index idx_orders1 on orders(onum);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show indexes from orders;
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| orders |          0 | idx_orders1 |            1 | onum        | A         |          10 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders  |            1 | odate       | A         |           2 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+2 rows in set (0.00 sec)
+
+
+3. Create an index that would permit salesperson to retrieve his orders.
+
+create index idx_orders2 on orders(snum);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show indexes from orders;
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| orders |          0 | idx_orders1 |            1 | onum        | A         |          10 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders  |            1 | odate       | A         |           2 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders2 |            1 | snum        | A         |           5 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+3 rows in set (0.00 sec)
+
+
+
+4. Let us assume that each salesperson is to have only one customer of a given rating,
+and that this is currently the case. Create an index that enforces it.
+
+
+create index idx_orders2 on customers(rating);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show indexes from customers;
++-----------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table     | Non_unique | Key_name    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++-----------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| customers |          1 | idx_orders2 |            1 | rating      | A         |           3 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++-----------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+1 row in set (0.00 sec)
+
+5. Create an index to speed up searching order on a given date by given customer.
+
+
+create index idx_orders3 on orders(cnum);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show indexes from orders;
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| orders |          0 | idx_orders1 |            1 | onum        | A         |          10 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders  |            1 | odate       | A         |           2 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders2 |            1 | snum        | A         |           5 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders3 |            1 | cnum        | A         |           7 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++--------+------------+-------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+4 rows in set (0.00 sec)
+
+
