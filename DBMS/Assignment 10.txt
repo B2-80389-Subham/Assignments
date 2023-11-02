@@ -1,0 +1,190 @@
+Database Technologies – Assignment 10
+PL-SQL
+
+
+
+
+
+1. Write a procedure that computes the perimeter and the area of a 
+rectangle. Define your own values for the length and width. (Assuming 
+that L and W are the length and width of the rectangle, Perimeter = 
+2*(L+W) and Area = L*W.
+
+DROP PROCEDURE IF EXISTS sp_rectangle;
+DELIMITER $$
+CREATE PROCEDURE sp_rectangle(IN p_length INT,IN p_breadth INT)
+BEGIN
+DECLARE V_area INT;
+DECLARE v_peri INT;
+
+
+SET v_peri = 2 * (p_length + p_breadth);
+SET v_area = p_length * p_breadth;
+SELECT v_peri AS `Perimeter of Rectangle`,v_area AS `Area of Rectangle`;
+
+
+END
+$$
+DELIMITER ;
+
+
+SOURCE D:/Sunbeam DBDA/4. DBMS/Assignments/ASSIGNMENT 10/sp_Assignment 10_1.sql
+CALL sp_rectangle(10,5);
++------------------------+-------------------+
+| Perimeter of Rectangle | Area of Rectangle |
++------------------------+-------------------+
+|                     30 |                50 |
++------------------------+-------------------+
+1 row in set (0.00 sec)
+
+
+2. Write a procedure that declares an integer variable called num, 
+assigns a value to it, and computes and inserts into the temp table 
+the value of the variable itself, its square, and its cube.
+
+
+CREATE TABLE result(
+	val INT,
+	v_square INT,
+	v_cube INT
+)
+
+DROP PROCEDURE IF EXISTS sp_multiple;
+DELIMITER $$
+CREATE PROCEDURE sp_multiple (IN value INT)
+BEGIN
+DECLARE num INT;
+DECLARE v_square INT;
+DECLARE v_cube INT;
+
+SET num = value;
+
+v_square = num * num;
+v_cube = num*num*num;
+
+INSERT INTO result VALUE(num,v_square,v_cube);
+
+END
+$$
+DELIMITER ;
+
+CALL sp_multiple(10);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM result;
++------+----------+--------+
+| val  | v_square | v_cube |
++------+----------+--------+
+|   10 |      100 |   1000 |
++------+----------+--------+
+1 row in set (0.00 sec)
+
+
+
+
+3.Create a procedure to Convert a temperature in Fahrenheit (F) to its
+equivalent in Celsius (C) and vice versa. The required formulae are:- 
+C= (F-32)*5/9 F= 9/5*C + 32
+
+DROP PROCEDURE IF EXISTS sp_temperature;
+DELIMITER $$
+
+CREATE PROCEDURE sp_temperature(IN f_num INT ,IN c_num INT )
+BEGIN
+DECLARE celcius FLOAT;
+DECLARE Fahrenheit FLOAT;
+
+IF f_num !=0  THEN 
+SET celcius = (f_num - 32) * 5 / 9;
+SELECT celcius;
+ELSEIF c_num !=0 THEN 
+SET Fahrenheit = (9/5) * c_num + 32;
+select Fahrenheit;
+
+END IF;
+
+END
+$$
+DELIMITER ;
+
+CALL sp_temperature(0,10);
++------------+
+| Fahrenheit |
++------------+
+|         50 |
++------------+
+1 row in set (0.00 sec)
+
+
+CALL sp_temperature(20,0);
++----------+
+| celcius  |
++----------+
+| -6.66667 |
++----------+
+1 row in set (0.00 sec)
+
+4.Create a procedure to Convert a number of inches into yards, feet, 
+and inches. For example, 124 inches equals 3 yards, 1 foot, and 4 
+inches.
+
+DROP PROCEDURE IF EXISTS sp_unit_convert;
+DELIMITER $$
+
+CREATE PROCEDURE sp_unit_convert(IN value INT)
+
+
+BEGIN
+
+
+
+DECLARE var_yards INT;
+DECLARE var_yards_rem_value INT;
+DECLARE var_feet INT;
+DECLARE var_inches_rem_value INT;
+DECLARE var_inches INT;
+
+SET var_yards = value/36;
+SET var_yards_rem_value = value%36;
+SET var_feet = var_yards_rem_value/12;
+SET var_inches = var_yards_rem_value%12;
+
+
+SELECT var_yards AS `YARDS`,var_feet AS `Feet`,var_inches AS `INCHES`;
+
+END
+$$
+DELIMITER ;
+
+CALL sp_unit_convert(124);
++-------+------+--------+
+| YARDS | Feet | INCHES |
++-------+------+--------+
+|     3 |    1 |      4 |
++-------+------+--------+
+1 row in set (0.00 sec)
+
+
+5. Your block should read in two real numbers and tell whether the 
+product of the two numbers is equal to or greater than 100.
+
+
+
+DROP PROCEDURE IF EXISTS sp_check_value;
+DELIMITER $$
+CREATE PROCEDURE sp_check_value(IN num1 FLOAT,IN num2 FLOAT)
+BEGIN
+DECLARE ans FLOAT;
+SET ans = num1 * num2;
+IF ans >= 100 THEN
+SELECT 	"Product of two number is greater than or equal to 100";
+ELSE
+SELECT "Product of two number is NOT greater than or equal to 100";
+END IF;
+END
+$$
+DELIMITER ;
+
++-------------------------------------------------------+
+| Product of two number is greater than or equal to 100 |
++-------------------------------------------------------+
