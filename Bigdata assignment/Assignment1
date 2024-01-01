@@ -1,0 +1,130 @@
+1. Retrieve the names of all customers who made a purchase.
+
+--select distinct customers.name from customers join sales on customers.customerid=sales.customerid;
+
+
++-----------------+
+| customers.name  |
++-----------------+
+| Alice Brown     |
+| Bob Johnson     |
+| Charlie Davis   |
+| Jane Smith      |
+| John Doe        |
++-----------------+
+
+
+-- 2. List the products and their total sales amounts for a given date range.
+
+select products.productname,sum(sales.totalamount) as total_sales from products join sales on products.productid = sales.productid where sales.saledate between '2023-01-01' AND '2023-03-01' group by products.productname;
+
+
+-- 3. Find the total sales amount for each product category.
+
+select products.category, sum(sales.totalamount) as total_sales_productvice from sales join products on products.productid = sales.productid group by products.category;
++--------------------+--------------------------+
+| products.category  | total_sales_productvice  |
++--------------------+--------------------------+
+| Clothing           | 60.00                    |
+| Electronics        | 2000.00                  |
+| Footwear           | 100.00                   |
+| Furniture          | 150.00                   |
++--------------------+--------------------------+
+
+
+
+-- 4. Identify the customers who made purchases in a specific city.
+
+
+
+select c.name,l.city from customers as c join sales as s on c.customerid = s.customerid join locations as l on c.locationid = l.locationid where l.city='Mumbai';
+
++----------------+---------+
+|     c.name     | l.city  |
++----------------+---------+
+| Jane Smith     | Mumbai  |
+| Charlie Davis  | Mumbai  |
++----------------+---------+
+
+
+-- 5. Calculate the average age of customers who bought products in the 'Electronics' category.
+
+
+select p.category as product_category, avg(c.age) as average_age from customers as c join sales as s on c.customerid=s.customerid join products p on s.productid=p.productid where p.category="Electronics " group by p.category;
+
++-------------------+--------------+
+| product_category  | average_age  |
++-------------------+--------------+
++-------------------+--------------+
+
+
+
+-- 6. List the top 3 products based on total sales amount.
+
+
+select p.productname,sum(s.totalamount) total_sales_productvice  from products as p join sales s on p.productid=s.productid group by p.productname order by total_sales_productvice Limit 3;
+
+
++----------------+--------------------------+
+| p.productname  | total_sales_productvice  |
++----------------+--------------------------+
+| T-shirt        | 60.00                    |
+| Shoes          | 100.00                   |
+| Bookshelf      | 150.00                   |
++----------------+--------------------------+
+
+
+-- 7. Find the total sales amount for each month.
+
+select extract(month from saledate) as month,sum(totalamount) as totalsalesamount from sales  group by extract(month from saledate) order by month;
+
++--------+-------------------+
+| month  | totalsalesamount  |
++--------+-------------------+
+| 1      | 2060.00           |
+| 2      | 250.00            |
++--------+-------------------+
+
+-- 8. Identify the products with no sales.
+
+select p.productname,p.productid from products p left  join sales s on s.productid=p.productid where s.productid is null;
+
++----------------+--------------+
+| p.productname  | p.productid  |
++----------------+--------------+
++----------------+--------------+
+
+-- 9. Calculate the total sales amount for each state.
+
+
+select l.state as state,sum(s.totalamount) as total_amount from sales s join customers c on s.customerid=c.customerid join locations l on c.locationid = l.locationid group by l.state order by l.state;
+
++--------------+---------------+
+|    state     | total_amount  |
++--------------+---------------+
+| Karnataka    | 100.00        |
+| Maharashtra  | 2210.00       |
++--------------+---------------+
+
+
+-- 10. Retrieve the customer names and their highest purchase amount.
+
+
+select c.name,max(s.totalamount) highest_purchase_amount from customers c join sales s on c.customerid = s.customerid group by c.name order by highest_purchase_amount desc;
+
+
+
+----------------+--------------------------+
+|     c.name     | highest_purchase_amount  |
++----------------+--------------------------+
+| John Doe       | 1600.00                  |
+| Bob Johnson    | 400.00                   |
+| Charlie Davis  | 150.00                   |
+| Alice Brown    | 100.00                   |
+| Jane Smith     | 60.00                    |
++----------------+--------------------------+
+
+
+
+
+

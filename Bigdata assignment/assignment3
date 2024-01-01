@@ -1,0 +1,111 @@
+  ##############
+ # Assignment 3: #
+  ##############
+
+1> 
+CREATE TABLE r_dup(
+userId INT,
+movieId INT,
+rating DOUBLE,
+MOVIE_TIMESTAMP STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES('skip.header.line.count'='1'); // to skip the table names and all.
+
+LOAD DATA LOCAL INPATH '/home/subham/Desktop/bigdata_git/movies/r_dup.csv'
+INTO TABLE r_dup;
+
+select * from r_dup;
+
++---------------+----------------+---------------+------------------------+
+| r_dup.userid  | r_dup.movieid  | r_dup.rating  | r_dup.movie_timestamp  |
++---------------+----------------+---------------+------------------------+
+| 17            | 70             | 3.0           | 0                      |
+| 35            | 21             | 1.0           | 0                      |
+| 49            | 19             | 2.0           | 0                      |
+| 49            | 21             | 1.0           | 0                      |
+| 49            | 70             | 4.0           | 0                      |
+| 87            | 19             | 1.0           | 0                      |
+| 87            | 21             | 2.0           | 0                      |
+| 98            | 19             | 2.0           | 0                      |
++---------------+----------------+---------------+------------------------+
+8 rows selected (1.145 seconds)
+
+
+
+2> 
+SELECT userid,CONCAT_WS(',',CONCAT(movieid, ',', rating)) AS concatenated_values
+FROM r_dup ;
+
++---------+----------------------+
+| userid  | concatenated_values  |
++---------+----------------------+
+| 17      | 70,3.0               |
+| 35      | 21,1.0               |
+| 49      | 19,2.0               |
+| 49      | 21,1.0               |
+| 49      | 70,4.0               |
+| 87      | 19,1.0               |
+| 87      | 21,2.0               |
+| 98      | 19,2.0               |
++---------+----------------------+
+8 rows selected (0.339 seconds)
+
+3> SELECT userid,CONCAT_WS(',', COLLECT_SET(CONCAT(movieid, ',', rating))) AS concatenated_values
+FROM r_dup GROUP BY userid;
+
+ans = 
+
++---------+-----------------------+
+| userid  |  concatenated_values  |
++---------+-----------------------+
+| 17      | 70,3.0                |
+| 35      | 21,1.0                |
+| 49      | 19,2.0,21,1.0,70,4.0  |
+| 87      | 19,1.0,21,2.0         |
+| 98      | 19,2.0                |
++---------+-----------------------+
+5 rows selected (27.972 seconds)
+
+4> 
+
+create table user_movies as
+select r1.movieid m1, r2.movieid m2 ,r1.rating rt1,r2.rating rt2 
+from r_dup r1 
+inner join r_dup r2 
+on r1.userid = r2.userid
+WHERE r1.movieid < r2.movieid ;
+
+ans = 
+
++-----------------+-----------------+------------------+------------------+
+| user_movies.m1  | user_movies.m2  | user_movies.rt1  | user_movies.rt2  |
++-----------------+-----------------+------------------+------------------+
+| 19              | 21              | 2.0              | 1.0              |
+| 19              | 70              | 2.0              | 4.0              |
+| 21              | 70              | 1.0              | 4.0              |
+| 19              | 21              | 1.0              | 2.0              |
++-----------------+-----------------+------------------+------------------+
+4 rows selected (0.383 seconds)
+
+
+5> 
+create table mvcorr
+as select m1,m2,count(*) as cnt,round(coalesce(corr(rt1,rt2),0))
+from user_movies
+group by m1,m2 ;
+
+
+select * from mvcorr;
+
++-----+-----+------+-------+
+| m1  | m2  | cnt  |  _c3  |
++-----+-----+------+-------+
+| 19  | 21  | 2    | -1.0  |
+| 19  | 70  | 1    | 0.0   |
+| 21  | 70  | 1    | 0.0   |
++-----+-----+------+-------+
+3 rows selected (22.08 seconds)
+
+
