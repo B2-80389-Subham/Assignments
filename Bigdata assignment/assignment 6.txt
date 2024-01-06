@@ -1,0 +1,364 @@
+Assignments -- Fire Dataset
+
+DESC fire_data;
+
++-------------------------------------+------------+----------+
+|              col_name               | data_type  | comment  |
++-------------------------------------+------------+----------+
+| callno                              | string     |          |
+| unitid                              | int        |          |
+| incidentno                          | string     |          |
+| calltype                            | string     |          |
+| calldate                            | date       |          |
+| watchdate                           | date       |          |
+| receivedtimestamp                   | timestamp  |          |
+| entrytimestamp                      | timestamp  |          |
+| dispatch_timestamp                  | timestamp  |          |
+| response_timestamp                  | timestamp  |          |
+| on_scene_timestamp                  | timestamp  |          |
+| transport_timestamp                 | timestamp  |          |
+| hospital_timestamp                  | timestamp  |          |
+| call_final_disposition              | string     |          |
+| available                           | timestamp  |          |
+| address                             | string     |          |
+| incident_zipcode                    | int        |          |
+| battalion                           | string     |          |
+| station_area                        | int        |          |
+| box                                 | int        |          |
+| original_priority                   | tinyint    |          |
+| priority                            | tinyint    |          |
+| final_priority                      | tinyint    |          |
+| als_unit                            | string     |          |
+| call_type_group                     | string     |          |
+| no_alarms                           | smallint   |          |
+| unit_type                           | string     |          |
+| unit_sequence_in_call_dispatch      | smallint   |          |
+| fire_prevention_district            | smallint   |          |
+| supervisor_district                 | smallint   |          |
+| neighborhooods_analysis_boundaries  | string     |          |
+| row_id                              | string     |          |
+| case_location                       | string     |          |
+| data_as_of                          | string     |          |
+| data_loaded_at                      | timestamp  |          |
+| analysis_neighborhoods              | smallint   |          |
+| city                                | string     |          |
+|                                     | NULL       | NULL     |
+| # Partition Information             | NULL       | NULL     |
+| # col_name                          | data_type  | comment  |
+| city                                | string     |          |
++-------------------------------------+------------+----------+
+
+
+
+1. How many distinct types of calls were made to the fire department?
+
+
+SELECT COUNT(DISTINCT calltype) dist_call_cnt 
+FROM fire_data;
+
++----------------+
+| dist_call_cnt  |
++----------------+
+| 33             |
++----------------+
+
+
+2. What are distinct types of calls made to the fire department?
+
+SELECT DISTINCT calltype
+FROM fire_data;
+
++-----------------------------------------------+
+|                   calltype                    |
++-----------------------------------------------+
+| Administrative                                |
+| Alarms                                        |
+| Electrical Hazard                             |
+| Elevator / Escalator Rescue                   |
+| Fuel Spill                                    |
+| Gas Leak (Natural and LP Gases)               |
+| High Angle Rescue                             |
+| Marine Fire                                   |
+| Mutual Aid / Assist Outside Agency            |
+| Odor (Strange / Unknown)                      |
+| Oil Spill                                     |
+| Other                                         |
+| Structure Fire / Smoke in Building            |
+| Vehicle Fire                                  |
+| Water Rescue                                  |
+| Aircraft Emergency                            |
+| Assist Police                                 |
+| Citizen Assist / Service Call                 |
+| Confined Space / Structure Collapse           |
+| Explosion                                     |
+| Extrication / Entrapped (Machinery, Vehicle)  |
+| HazMat                                        |
+| Industrial Accidents                          |
+| Lightning Strike (Investigation)              |
+| Medical Incident                              |
+| Outside Fire                                  |
+| Smoke Investigation (Outside)                 |
+| Structure Fire                                |
+| Suspicious Package                            |
+| Traffic Collision                             |
+| Train / Rail Fire                             |
+| Train / Rail Incident                         |
+| Watercraft in Distress                        |
++-----------------------------------------------+
+
+
+
+3. Find out all responses or delayed times greater than 5 mins?
+
+SELECT receivedtimestamp, response_timestamp, MINUTE(response_timestamp-receivedtimestamp) 
+FROM fire_data 
+WHERE MINUTE(response_timestamp-receivedtimestamp) > 5 
+LIMIT 5; 
+
++------------------------+------------------------+------+
+|   receivedtimestamp    |   response_timestamp   | _c2  |
++------------------------+------------------------+------+
+| 2011-09-13 16:44:56.0  | 2011-09-13 16:51:10.0  | 6    |
+| 2011-09-13 16:44:56.0  | 2011-09-13 17:01:32.0  | 16   |
+| 2011-09-13 16:44:56.0  | 2011-09-13 17:02:02.0  | 17   |
+| 2011-09-13 16:44:56.0  | 2011-09-13 16:55:08.0  | 10   |
+| 2011-09-13 16:44:56.0  | 2011-09-13 16:51:51.0  | 6    |
++------------------------+------------------------+------+
+5 rows selected (0.183 seconds)
+
+
+
+
+4. What were the most common call types?
+
+SELECT calltype, COUNT(callno) cnt
+FROM fire_data
+GROUP BY calltype
+ORDER BY COUNT(callno) DESC;
+
++-----------------------------------------------+----------+
+|                   calltype                    |   cnt    |
++-----------------------------------------------+----------+
+| Medical Incident                              | 4247943  |
+| Alarms                                        | 720968   |
+| Structure Fire                                | 714873   |
+| Traffic Collision                             | 259541   |
+| Other                                         | 110855   |
+| Citizen Assist / Service Call                 | 96222    |
+| Outside Fire                                  | 85967    |
+| Water Rescue                                  | 34061    |
+| Gas Leak (Natural and LP Gases)               | 30484    |
+| Vehicle Fire                                  | 28378    |
+| Electrical Hazard                             | 21907    |
+| Structure Fire / Smoke in Building            | 18894    |
+| Elevator / Escalator Rescue                   | 17952    |
+| Smoke Investigation (Outside)                 | 14613    |
+| Odor (Strange / Unknown)                      | 13673    |
+| Fuel Spill                                    | 7038     |
+| HazMat                                        | 4399     |
+| Industrial Accidents                          | 3333     |
+| Explosion                                     | 3067     |
+| Train / Rail Incident                         | 1715     |
+| Aircraft Emergency                            | 1512     |
+| Assist Police                                 | 1508     |
+| High Angle Rescue                             | 1456     |
+| Watercraft in Distress                        | 1237     |
+| Extrication / Entrapped (Machinery, Vehicle)  | 935      |
+| Confined Space / Structure Collapse           | 791      |
+| Mutual Aid / Assist Outside Agency            | 626      |
+| Oil Spill                                     | 518      |
+| Marine Fire                                   | 508      |
+| Suspicious Package                            | 368      |
+| Administrative                                | 345      |
+| Train / Rail Fire                             | 120      |
+| Lightning Strike (Investigation)              | 21       |
++-----------------------------------------------+----------+
+
+
+
+
+5. What zip codes accounted for the most common calls?
+
+SELECT incident_zipcode, COUNT(callno) nt
+FROM fire_data
+WHERE calltype IN ('Medical Incident','Alarms','Structure Fire','Traffic Collision','Other','Citizen Assist / Service Call')
+GROUP BY incident_zipcode
+ORDER BY COUNT(callno) DESC;
+
++-------------------+---------+
+| incident_zipcode  |   nt    |
++-------------------+---------+
+| 94102             | 803076  |
+| 94103             | 775637  |
+| 94109             | 538018  |
+| 94110             | 512230  |
+| 94124             | 310084  |
+| 94112             | 286130  |
+| 94115             | 274656  |
+| 94107             | 235562  |
+| 94122             | 212276  |
+| 94133             | 209763  |
+| 94117             | 203265  |
+| 94114             | 181753  |
+| 94118             | 179311  |
+| 94134             | 165364  |
+| 94121             | 155116  |
+| 94132             | 145897  |
+| 94105             | 145414  |
+| 94108             | 139255  |
+| 94123             | 128756  |
+| 94116             | 128647  |
+| 94131             | 112500  |
+| 94111             | 95447   |
+| 94127             | 62736   |
+| 94104             | 43177   |
+| 94130             | 38913   |
+| 94158             | 35477   |
+| 94129             | 19004   |
+| NULL              | 12938   |
++-------------------+---------+
+
+
+
+6. What San Francisco neighborhoods are in the zip codes 94102 and 94103?
+SELECT neighborhooods_analysis_boundaries
+FROM fire_data
+WHERE incident_zipcode IN (94102,94103) AND LOWER(city) IN ('sf','san francisco')
+LIMIT 20;
+
++-------------------------------------+
+| neighborhooods_analysis_boundaries  |
++-------------------------------------+
+| South of Market                     |
+| Tenderloin                          |
+| Tenderloin                          |
+| Nob Hill                            |
+| South of Market                     |
+| South of Market                     |
+| South of Market                     |
+| South of Market                     |
+| Hayes Valley                        |
+| Mission                             |
+| Tenderloin                          |
+| Hayes Valley                        |
+| Tenderloin                          |
+| Financial District/South Beach      |
+| Hayes Valley                        |
+| South of Market                     |
+| Tenderloin                          |
+| Tenderloin                          |
+| Mission                             |
+| Tenderloin                          |
++-------------------------------------+
+
+
+
+7. What was the sum of all calls, average, min, and max of the call response times?
+WITH response_time AS (SELECT MINUTE(response_timestamp - receivedtimestamp) response_delay FROM fire_data)
+SELECT SUM(response_delay) sum_response_time,
+       MIN(response_delay) min_response_time,
+       MAX(response_delay) max_response_time,
+       AVG(response_delay) avg_response_time
+FROM response_time;
+
++--------------------+--------------------+--------------------+---------------------+
+| sum_response_time  | min_response_time  | max_response_time  |  avg_response_time  |
++--------------------+--------------------+--------------------+---------------------+
+| 19943951           | -58                | 59                 | 3.3225647917552745  |
++--------------------+--------------------+--------------------+---------------------+
+
+
+8. How many distinct years of data are in the CSV file?
+SELECT DISTINCT YEAR(receivedtimestamp)
+FROM fire_data;
+
++-------+
+|  _c0  |
++-------+
+| 2000  |
+| 2002  |
+| 2004  |
+| 2006  |
+| 2008  |
+| 2010  |
+| 2012  |
+| 2014  |
+| 2016  |
+| 2018  |
+| 2020  |
+| 2022  |
+| 2001  |
+| 2003  |
+| 2005  |
+| 2007  |
+| 2009  |
+| 2011  |
+| 2013  |
+| 2015  |
+| 2017  |
+| 2019  |
+| 2021  |
+| 2023  |
++-------+
+
+
+9. What week of the year in 2018 had the most fire calls?
+SELECT WEEKOFYEAR(receivedtimestamp) wk, 
+FROM fire_data
+WHERE YEAR(receivedtimestamp)='2018' AND calltype LIKE '%Fire%'
+GROUP BY WEEKOFYEAR(receivedtimestamp)
+ORDER BY COUNT(callno) DESC
+LIMIT 1;
+
++-----+
+| wk  |
++-----+
+| 1   |
++-----+
+
+
+
+
+10. What neighborhoods in San Francisco had the worst response time in 2018?
+SELECT neighborhooods_analysis_boundaries, AVG(MINUTE(response_timestamp - receivedtimestamp)) avg_response_timestamp
+FROM fire_data
+WHERE UPPER(city) IN ('SF','SAN FRANCISCO') AND YEAR(receivedtimestamp)='2018'
+GROUP BY neighborhooods_analysis_boundaries
+ORDER BY avg_response_timestamp DESC
+LIMIT 30;
+
++-------------------------------------+-------------------------+
+| neighborhooods_analysis_boundaries  | avg_response_timestamp  |
++-------------------------------------+-------------------------+
+| Treasure Island                     | 5.829373650107992       |
+| Lincoln Park                        | 4.856573705179283       |
+| Presidio                            | 4.534562211981567       |
+| Twin Peaks                          | 3.7212183789365         |
+| Golden Gate Park                    | 3.6285714285714286      |
+| Bernal Heights                      | 3.595940959409594       |
+| Russian Hill                        | 3.519392152415514       |
+| Lakeshore                           | 3.426170737172306       |
+| Portola                             | 3.4106076571829997      |
+| Glen Park                           | 3.397196261682243       |
+| Potrero Hill                        | 3.387758875739645       |
+| Noe Valley                          | 3.385614702154626       |
+| None                                | 3.358288770053476       |
+| Bayview Hunters Point               | 3.3552210974960044      |
+| Seacliff                            | 3.3460803059273423      |
+| Visitacion Valley                   | 3.3287444933920707      |
+| Lone Mountain/USF                   | 3.3141331834785053      |
+| Japantown                           | 3.3053715967623254      |
+| Inner Sunset                        | 3.2932112550245645      |
+| Outer Richmond                      | 3.277070964093865       |
+| Excelsior                           | 3.274055829228243       |
+| Chinatown                           | 3.2468733938667125      |
+| Marina                              | 3.226648112715255       |
+| Sunset/Parkside                     | 3.206207801950488       |
+| Inner Richmond                      | 3.195064321344185       |
+| Presidio Heights                    | 3.193612774451098       |
+| Mission Bay                         | 3.1929897767577717      |
+| West of Twin Peaks                  | 3.1868462757527736      |
+| Financial District/South Beach      | 3.180920050485268       |
+| Oceanview/Merced/Ingleside          | 3.143040246090746       |
++-------------------------------------+-------------------------+
+

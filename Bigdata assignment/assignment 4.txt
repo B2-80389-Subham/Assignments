@@ -1,0 +1,365 @@
+1. Create table "books_staging" and load books.csv in it.
+
+CREATE TABLE books_staging(id INT,name STRING, author STRING, subject STRING, price FLOAT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH 'Desktop/BigData/data/books.csv' INTO TABLE books_staging;
+
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+| books_staging.id  |        books_staging.name        | books_staging.author  | books_staging.subject  | books_staging.price  |
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+| 1001              | Exploring C                      | Yashwant Kanetkar     | C Programming          | 123.456              |
+| 1002              | Pointers in C                    | Yashwant Kanetkar     | C Programming          | 371.019              |
+| 1003              | ANSI C Programming               | E Balaguruswami       | C Programming          | 334.215              |
+| 1004              | ANSI C Programming               | Dennis Ritchie        | C Programming          | 140.121              |
+| 2001              | C++ Complete Reference           | Herbert Schildt       | C++ Programming        | 417.764              |
+| 2002              | C++ Primer                       | Stanley Lippman       | C++ Programming        | 620.665              |
+| 2003              | C++ Programming Language         | Bjarne Stroustrup     | C++ Programming        | 987.213              |
+| 3001              | Java Complete Reference          | Herbert Schildt       | Java Programming       | 525.121              |
+| 3002              | Core Java Volume I               | Cay Horstmann         | Java Programming       | 575.651              |
+| 3003              | Java Programming Language        | James Gosling         | Java Programming       | 458.238              |
+| 4001              | Operatig System Concepts         | Peter Galvin          | Operating Systems      | 567.391              |
+| 4002              | Design of UNIX Operating System  | Mauris J Bach         | Operating Systems      | 421.938              |
+| 4003              | UNIX Internals                   | Uresh Vahalia         | Operating Systems      | 352.822              |
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+
+
+2. Create table "books_orc" as transactional table.
+
+CREATE TABLE books_orc (
+id INT, name STRING, author STRING, subject STRING, price FLOAT) 
+STORED AS ORC 
+TBLPROPERTIES('transactional'='true');
+
+INSERT INTO books_orc
+SELECT * FROM books_staging;
+
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| books_orc.id  |          books_orc.name          |  books_orc.author  | books_orc.subject  | books_orc.price  |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| 1001          | Exploring C                      | Yashwant Kanetkar  | C Programming      | 123.456          |
+| 1002          | Pointers in C                    | Yashwant Kanetkar  | C Programming      | 371.019          |
+| 1003          | ANSI C Programming               | E Balaguruswami    | C Programming      | 334.215          |
+| 1004          | ANSI C Programming               | Dennis Ritchie     | C Programming      | 140.121          |
+| 2001          | C++ Complete Reference           | Herbert Schildt    | C++ Programming    | 417.764          |
+| 2002          | C++ Primer                       | Stanley Lippman    | C++ Programming    | 620.665          |
+| 2003          | C++ Programming Language         | Bjarne Stroustrup  | C++ Programming    | 987.213          |
+| 3001          | Java Complete Reference          | Herbert Schildt    | Java Programming   | 525.121          |
+| 3002          | Core Java Volume I               | Cay Horstmann      | Java Programming   | 575.651          |
+| 3003          | Java Programming Language        | James Gosling      | Java Programming   | 458.238          |
+| 4001          | Operatig System Concepts         | Peter Galvin       | Operating Systems  | 567.391          |
+| 4002          | Design of UNIX Operating System  | Mauris J Bach      | Operating Systems  | 421.938          |
+| 4003          | UNIX Internals                   | Uresh Vahalia      | Operating Systems  | 352.822          |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+
+
+3. Create a materialized view for summary -- Subjectwise average book price.
+
+CREATE MATERIALIZED VIEW mv_books_avgprice_subject AS 
+SELECT subject, AVG(price) avgprice
+FROM books_orc
+GROUP BY subject;
+
++------------------------------------+-------------------------------------+
+| mv_books_avgprice_subject.subject  | mv_books_avgprice_subject.avgprice  |
++------------------------------------+-------------------------------------+
+| C Programming                      | 242.2027530670166                   |
+| C++ Programming                    | 675.2139994303385                   |
+| Java Programming                   | 519.6699930826823                   |
+| Operating Systems                  | 447.38365681966144                  |
++------------------------------------+-------------------------------------+
+
+4. Display a report that shows subject and average price in descending order -- on materialized view.
+
+
+SELECT subject, avgprice
+FROM mv_books_avgprice_subject
+ORDER BY avgprice DESC;
+
++--------------------+---------------------+
+|      subject       |      avgprice       |
++--------------------+---------------------+
+| C++ Programming    | 675.2139994303385   |
+| Java Programming   | 519.6699930826823   |
+| Operating Systems  | 447.38365681966144  |
+| C Programming      | 242.2027530670166   |
++--------------------+---------------------+
+
+
+5. Create a new file newbooks.csv.
+20,Atlas Shrugged,Ayn Rand,Novel,723.90
+21,The Fountainhead,Ayn Rand,Novel,923.80
+22,The Archer,Paulo Cohelo,Novel,623.94
+23,The Alchemist,Paulo Cohelo,Novel,634.80
+
+hadoop fs -mkdir -p /user/sunbeam/newbooks/input
+
+hadoop fs -put /tmp/temp.csv /user/sunbeam/newbooks/input
+
+-rw-r--r--   1 sad7_5407 supergroup        165 2024-01-01 11:53 /user/sunbeam/newbooks/input/temp.csv
+sad7_5407@MAYDAYx3 /tmp $ hadoop fs -head /user/sunbeam/newbooks/input/temp.csv
+20,Atlas Shrugged,Ayn Rand,Novel,723.90
+21,The Fountainhead,Ayn Rand,Novel,923.80
+22,The Archer,Paulo Cohelo,Novel,623.94
+23,The Alchemist,Paulo Cohelo,Novel,634.80
+sad7_5407@MAYDAYx3 /tmp $ hadoop fs -mv /user/sunbeam/newbooks/input/temp.csv /user/sunbeam/newbooks/input/newbooks.csv
+sad7_5407@MAYDAYx3 /tmp $ hadoop fs -head /user/sunbeam/newbooks/input/newbooks.csv
+20,Atlas Shrugged,Ayn Rand,Novel,723.90
+21,The Fountainhead,Ayn Rand,Novel,923.80
+22,The Archer,Paulo Cohelo,Novel,623.94
+23,The Alchemist,Paulo Cohelo,Novel,634.80
+
+7. Insert "new" records from books_staging into books_orc.
+
+LOAD DATA INPATH '/user/sunbeam/newbooks/input/newbooks.csv' INTO TABLE books_staging;
+
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| books_orc.id  |          books_orc.name          |  books_orc.author  | books_orc.subject  | books_orc.price  |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| 1001          | Exploring C                      | Yashwant Kanetkar  | C Programming      | 123.456          |
+| 1002          | Pointers in C                    | Yashwant Kanetkar  | C Programming      | 371.019          |
+| 1003          | ANSI C Programming               | E Balaguruswami    | C Programming      | 334.215          |
+| 1004          | ANSI C Programming               | Dennis Ritchie     | C Programming      | 140.121          |
+| 2001          | C++ Complete Reference           | Herbert Schildt    | C++ Programming    | 417.764          |
+| 2002          | C++ Primer                       | Stanley Lippman    | C++ Programming    | 620.665          |
+| 2003          | C++ Programming Language         | Bjarne Stroustrup  | C++ Programming    | 987.213          |
+| 3001          | Java Complete Reference          | Herbert Schildt    | Java Programming   | 525.121          |
+| 3002          | Core Java Volume I               | Cay Horstmann      | Java Programming   | 575.651          |
+| 3003          | Java Programming Language        | James Gosling      | Java Programming   | 458.238          |
+| 4001          | Operatig System Concepts         | Peter Galvin       | Operating Systems  | 567.391          |
+| 4002          | Design of UNIX Operating System  | Mauris J Bach      | Operating Systems  | 421.938          |
+| 4003          | UNIX Internals                   | Uresh Vahalia      | Operating Systems  | 352.822          |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+| books_staging.id  |        books_staging.name        | books_staging.author  | books_staging.subject  | books_staging.price  |
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+| 1001              | Exploring C                      | Yashwant Kanetkar     | C Programming          | 123.456              |
+| 1002              | Pointers in C                    | Yashwant Kanetkar     | C Programming          | 371.019              |
+| 1003              | ANSI C Programming               | E Balaguruswami       | C Programming          | 334.215              |
+| 1004              | ANSI C Programming               | Dennis Ritchie        | C Programming          | 140.121              |
+| 2001              | C++ Complete Reference           | Herbert Schildt       | C++ Programming        | 417.764              |
+| 2002              | C++ Primer                       | Stanley Lippman       | C++ Programming        | 620.665              |
+| 2003              | C++ Programming Language         | Bjarne Stroustrup     | C++ Programming        | 987.213              |
+| 3001              | Java Complete Reference          | Herbert Schildt       | Java Programming       | 525.121              |
+| 3002              | Core Java Volume I               | Cay Horstmann         | Java Programming       | 575.651              |
+| 3003              | Java Programming Language        | James Gosling         | Java Programming       | 458.238              |
+| 4001              | Operatig System Concepts         | Peter Galvin          | Operating Systems      | 567.391              |
+| 4002              | Design of UNIX Operating System  | Mauris J Bach         | Operating Systems      | 421.938              |
+| 4003              | UNIX Internals                   | Uresh Vahalia         | Operating Systems      | 352.822              |
+| 20                | Atlas Shrugged                   | Ayn Rand              | Novel                  | 723.9                |
+| 21                | The Fountainhead                 | Ayn Rand              | Novel                  | 923.8                |
+| 22                | The Archer                       | Paulo Cohelo          | Novel                  | 623.94               |
+| 23                | The Alchemist                    | Paulo Cohelo          | Novel                  | 634.8                |
++-------------------+----------------------------------+-----------------------+------------------------+----------------------+
+
+INSERT INTO books_orc SELECT * FROM books_staging WHERE id < 1000;
+
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| books_orc.id  |          books_orc.name          |  books_orc.author  | books_orc.subject  | books_orc.price  |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| 1001          | Exploring C                      | Yashwant Kanetkar  | C Programming      | 123.456          |
+| 1002          | Pointers in C                    | Yashwant Kanetkar  | C Programming      | 371.019          |
+| 1003          | ANSI C Programming               | E Balaguruswami    | C Programming      | 334.215          |
+| 1004          | ANSI C Programming               | Dennis Ritchie     | C Programming      | 140.121          |
+| 2001          | C++ Complete Reference           | Herbert Schildt    | C++ Programming    | 417.764          |
+| 2002          | C++ Primer                       | Stanley Lippman    | C++ Programming    | 620.665          |
+| 2003          | C++ Programming Language         | Bjarne Stroustrup  | C++ Programming    | 987.213          |
+| 3001          | Java Complete Reference          | Herbert Schildt    | Java Programming   | 525.121          |
+| 3002          | Core Java Volume I               | Cay Horstmann      | Java Programming   | 575.651          |
+| 3003          | Java Programming Language        | James Gosling      | Java Programming   | 458.238          |
+| 4001          | Operatig System Concepts         | Peter Galvin       | Operating Systems  | 567.391          |
+| 4002          | Design of UNIX Operating System  | Mauris J Bach      | Operating Systems  | 421.938          |
+| 4003          | UNIX Internals                   | Uresh Vahalia      | Operating Systems  | 352.822          |
+| 20            | Atlas Shrugged                   | Ayn Rand           | Novel              | 723.9            |
+| 21            | The Fountainhead                 | Ayn Rand           | Novel              | 923.8            |
+| 22            | The Archer                       | Paulo Cohelo       | Novel              | 623.94           |
+| 23            | The Alchemist                    | Paulo Cohelo       | Novel              | 634.8            |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+
+
+8. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new books visible in report?
+
+SELECT subject, avgprice
+FROM mv_books_avgprice_subject
+ORDER BY avgprice DESC;
+
++--------------------+---------------------+
+|      subject       |      avgprice       |
++--------------------+---------------------+
+| C++ Programming    | 675.2139994303385   |
+| Java Programming   | 519.6699930826823   |
+| Operating Systems  | 447.38365681966144  |
+| C Programming      | 242.2027530670166   |
++--------------------+---------------------+
+
+9. Rebuild the materialized view.
+
+ALTER MATERIALIZED VIEW mv_books_avgprice_subject REBUILD;
+
+10. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new books visible in report?
+
+SELECT subject,avgprice
+FROM mv_books_avgprice_subject
+ORDER BY avgprice DESC;
+
++--------------------+---------------------+
+|      subject       |      avgprice       |
++--------------------+---------------------+
+| Novel              | 726.6100006103516   |
+| C++ Programming    | 675.2139994303385   |
+| Java Programming   | 519.6699930826823   |
+| Operating Systems  | 447.38365681966144  |
+| C Programming      | 242.2027530670166   |
++--------------------+---------------------+
+
+11. Increase price of all Java books by 10% in books_orc.
+
+UPDATE books_orc SET price = price * 1.1 WHERE subject LIKE '%Java%';
+
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| books_orc.id  |          books_orc.name          |  books_orc.author  | books_orc.subject  | books_orc.price  |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+| 1001          | Exploring C                      | Yashwant Kanetkar  | C Programming      | 123.456          |
+| 1002          | Pointers in C                    | Yashwant Kanetkar  | C Programming      | 371.019          |
+| 1003          | ANSI C Programming               | E Balaguruswami    | C Programming      | 334.215          |
+| 1004          | ANSI C Programming               | Dennis Ritchie     | C Programming      | 140.121          |
+| 2001          | C++ Complete Reference           | Herbert Schildt    | C++ Programming    | 417.764          |
+| 2002          | C++ Primer                       | Stanley Lippman    | C++ Programming    | 620.665          |
+| 2003          | C++ Programming Language         | Bjarne Stroustrup  | C++ Programming    | 987.213          |
+| 4001          | Operatig System Concepts         | Peter Galvin       | Operating Systems  | 567.391          |
+| 4002          | Design of UNIX Operating System  | Mauris J Bach      | Operating Systems  | 421.938          |
+| 4003          | UNIX Internals                   | Uresh Vahalia      | Operating Systems  | 352.822          |
+| 20            | Atlas Shrugged                   | Ayn Rand           | Novel              | 723.9            |
+| 21            | The Fountainhead                 | Ayn Rand           | Novel              | 923.8            |
+| 22            | The Archer                       | Paulo Cohelo       | Novel              | 623.94           |
+| 23            | The Alchemist                    | Paulo Cohelo       | Novel              | 634.8            |
+| 3001          | Java Complete Reference          | Herbert Schildt    | Java Programming   | 577.63306        |
+| 3002          | Core Java Volume I               | Cay Horstmann      | Java Programming   | 633.2161         |
+| 3003          | Java Programming Language        | James Gosling      | Java Programming   | 504.06183        |
++---------------+----------------------------------+--------------------+--------------------+------------------+
+
+
+12. Rebuild the materialized view.
+
+ALTER MATERIALIZED VIEW mv_books_avgprice_subject REBUILD;
+
+13. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new price changes visible in report?
+
+SELECT subject,avgprice
+FROM mv_books_avgprice_subject
+ORDER BY avgprice DESC;
+
++--------------------+---------------------+
+|      subject       |      avgprice       |
++--------------------+---------------------+
+| Novel              | 726.6100006103516   |
+| C++ Programming    | 675.2139994303385   |
+| Java Programming   | 571.6370035807291   |
+| Operating Systems  | 447.38365681966144  |
+| C Programming      | 242.2027530670166   |
++--------------------+---------------------+
+
+
+14. Delete all Java books.
+
+DELETE FROM books_staging WHERE subject LIKE '%Java%'; --- Error : books_staging is not a transactional table
+DELETE FROM books_orc WHERE subject LIKE '%Java%';
+
+15. Rebuild the materialized view.
+
+ALTER MATERIALIZED VIEW mv_books_avgprice_subject REBUILD;
+
+16. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new price changes visible in report?
+
+SELECT subject,avgprice
+FROM mv_books_avgprice_subject
+ORDER BY avgprice DESC;
+
++--------------------+---------------------+
+|      subject       |      avgprice       |
++--------------------+---------------------+
+| Novel              | 726.6100006103516   |
+| C++ Programming    | 675.2139994303385   |
+| Operating Systems  | 447.38365681966144  |
+| C Programming      | 242.2027530670166   |
++--------------------+---------------------+
+
+
+17. Upload movies_caret.csv data into HDFS directory (not in hive warehouse).
+
+hadoop fs -mkdir -p /user/sunbeam/movies/input
+hadoop fs -put Desktop/BigData/data/movies/movies_caret.csv /user/sunbeam/movies/input
+
+18. Create external table movies1 with schema - id INT, title STRING, genres STRING.
+Find number of 'Action' movies.
+
+CREATE EXTERNAL TABLE movies1 (id INT, title STRING, genres STRING) 
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '^'
+LOCATION '/user/sunbeam/movies/input'
+TBLPROPERTIES('skip.header.line.count'='1');
+
+SELECT COUNT(id) cnt
+FROM movies1
+WHERE genres LIKE '%Action%';
+
++-------+
+|  cnt  |
++-------+
+| 1545  |
++-------+
+
+19. Create external table movies2 with schema - id INT, title STRING, genres ARRAY<STRING>.
+Find number of movies having single genre.
+
+CREATE EXTERNAL TABLE movies2 (id INT, title STRING, genres ARRAY<STRING>)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '^'
+COLLECTION ITEMS TERMINATED BY '|'
+LOCATION '/user/sunbeam/movies/input'
+TBLPROPERTIES('skip.header.line.count'='1');
+
+
+SELECT COUNT(id) cnt
+FROM movies2
+WHERE SIZE(genres)=1;
+
++-------+
+|  cnt  |
++-------+
+| 2793  |
++-------+
+
+
+20. Upload busstops.json data into HDFS directory. Then create hive external table to fetch data using JsonSerDe.
+{"_id":{"$oid":"5a0720b478597fc11004d951"},
+ "stop":"Non-BRTS",
+ "code":"103B-D-04",
+ "seq":4.0,
+ "stage":1.0,
+ "name":"Aranyeshwar Corner",
+ "location":{"type":"Point","coordinates":[73.857675,18.486381]}}
+location STRUCT<type:STRING, coordinates:ARRAY<DOUBLE>>
+When column-name have special charatcters like _ or $, they should be encapsulated in `back-quotes`.
+
+hadoop fs -mkdir -p /user/sunbeam/bus/input
+hadoop fs -put Desktop/BigData/data/bus.json /user/sunbeam/bus/input
+
+CREATE EXTERNAL TABLE busstops(`_id` STRUCT<`$oid`:STRING>, stop STRING, code STRING, seq FLOAT, stage FLOAT, name STRING, location STRUCT<type:STRING, coordinates:ARRAY<DOUBLE>>)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+LOCATION '/user/sunbeam/bus/input';
+
++--------------------------------------+----------------+----------------+---------------+-----------------+--------------------------+----------------------------------------------------+
+|             busstops._id             | busstops.stop  | busstops.code  | busstops.seq  | busstops.stage  |      busstops.name       |                 busstops.location                  |
++--------------------------------------+----------------+----------------+---------------+-----------------+--------------------------+----------------------------------------------------+
+| {"$oid":"5a0720b478597fc11004d951"}  | Non-BRTS       | 103B-D-04      | 4.0           | 1.0             | Aranyeshwar Corner       | {"type":"Point","coordinates":[73.857675,18.486381]} |
+| {"$oid":"5a0720b478597fc11004d952"}  | Non-BRTS       | 103B-D-05      | 5.0           | 2.0             | Natubaug                 | {"type":"Point","coordinates":[73.857167,18.48103]} |
+| {"$oid":"5a0720b478597fc11004d953"}  | Non-BRTS       | 103B-D-07      | 7.0           | 2.0             | Shankar Maharaj Math     | {"type":"Point","coordinates":[73.857234,18.470738]} |
+| {"$oid":"5a0720b478597fc11004d954"}  | Non-BRTS       | 103B-D-06      | 6.0           | 2.0             | Padmawati                | {"type":"Point","coordinates":[73.857244,18.477347]} |
+| {"$oid":"5a0720b478597fc11004d955"}  | Non-BRTS       | 103B-D-08      | 8.0           | 3.0             | Balajinagar              | {"type":"Point","coordinates":[73.858154,18.464405]} |
+| {"$oid":"5a0720b478597fc11004d95b"}  | Non-BRTS       | 103B-D-09      | 9.0           | 3.0             | Bharati Vidyapeeth Gate  | {"type":"Point","coordinates":[73.8582,18.457434]} |
+| {"$oid":"5a0720b478597fc11004d95d"}  | Non-BRTS       | 103B-U-03      | 3.0           | 1.0             | Bharati Vidyapeeth Gate  | {"type":"Point","coordinates":[73.858154,18.457616]} |
+| {"$oid":"5a0720b478597fc11004d95e"}  | Non-BRTS       | 103B-U-04      | 4.0           | 2.0             | Balajinagar              | {"type":"Point","coordinates":[73.857973,18.464558]} |
+| {"$oid":"5a0720b478597fc11004d95f"}  | Non-BRTS       | 103B-U-05      | 5.0           | 2.0             | Shankar Maharaj Math     | {"type":"Point","coordinates":[73.857067,18.470349]} |
++--------------------------------------+----------------+----------------+---------------+-----------------+--------------------------+----------------------------------------------------+

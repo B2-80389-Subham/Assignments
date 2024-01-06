@@ -1,0 +1,76 @@
+2. Create ORC table emp_job_part to partition emp data jobwise. Upload emp data dynamically into these partitions.
+
+CREATE TABLE emp_job_part(empno INT,ename STRING,mgr INT,hire DATE,sal FLOAT,comm FLOAT,deptno INT)
+PARTITIONED BY (job STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC;
+
+CREATE TABLE emp_staging(empno INT,ename STRING,job STRING,mgr INT,hire DATE,sal FLOAT,comm FLOAT,deptno INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH 'Desktop/BigData/data/emp.csv' INTO TABLE emp_staging;
+
+INSERT INTO emp_job_part PARTITION(job)
+SELECT empno, ename,mgr,hire,sal,comm,deptno,job
+FROM emp_staging;
+
+
+3. Create ORC table emp_job_dept_part to partition emp data jobwise and deptwise. Also divide them into two buckets by empno. Upload emp data dynamically into these partitions.
+
+CREATE TABLE emp_job_dept_part (empno INT,ename STRING,mgr INT,hire DATE,sal FLOAT,comm FLOAT)
+PARTITIONED BY (job STRING,deptno INT)
+CLUSTERED BY(empno) INTO 2 BUCKETS
+STORED AS ORC;
+
+INSERT INTO emp_job_dept_part PARTITION(job,deptno)
+SELECT empno ,ename,mgr,hire,sal,comm, job, deptno
+FROM emp_staging;
+
+4. Load Fire data into Hive in a staging table "fire_staging".
+
+CREATE TABLE fire_staging(callno STRING,unitid INT,incidentno STRING,calltype STRING,calldate DATE,watchdate DATE,receivedtimestamp TIMESTAMP,entrytimestamp TIMESTAMP,dispatch_timestamp TIMESTAMP ,response_timestamp TIMESTAMP,on_scene_timestamp TIMESTAMP,transport_timestamp TIMESTAMP,hospital_timestamp TIMESTAMP,Call_Final_Disposition STRING,Available TIMESTAMP,Address STRING,City STRING,Incident_zipcode INT,Battalion STRING,Station_Area INT,Box INT,Original_Priority TINYINT,Priority TINYINT,Final_Priority TINYINT,ALS_Unit STRING,Call_Type_Group STRING,No_Alarms SMALLINT,Unit_Type STRING,Unit_sequence_in_call_dispatch SMALLINT,Fire_Prevention_District SMALLINT,Supervisor_District SMALLINT,Neighborhooods_Analysis_Boundaries STRING,Row_ID STRING,case_location STRING,data_as_of STRING,data_loaded_at TIMESTAMP,Analysis_Neighborhoods SMALLINT) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+TBLPROPERTIES('skip.header.line.count'='1');
+
+LOAD DATA LOCAL INPATH 'Desktop/BigData/data/Fire_Department_Calls_for_Service.csv' INTO TABLE fire_staging;
+
+SELECT callno, calldate, entrytimestamp
+FROM fire_staging;
+
+SELECT Call_Final_Disposition, Call_Type_Group, Original_Priority
+FROM fire_staging;
+
+SELECT Address, Incident_zipcode, Battalion, case_location, data_as_of
+FROM fire_staging;
+
+5. Create a transactional ORC table "fire_data" with appropriate data types partitioned by city and buckted by call number into 4 buckets. Load data from
+staging table into this table.
+
+CREATE TABLE fire_data(callno STRING,unitid INT,incidentno STRING,calltype STRING,calldate DATE,watchdate DATE,receivedtimestamp TIMESTAMP,entrytimestamp TIMESTAMP,dispatch_timestamp TIMESTAMP ,response_timestamp TIMESTAMP,on_scene_timestamp TIMESTAMP,transport_timestamp TIMESTAMP,hospital_timestamp TIMESTAMP,Call_Final_Disposition STRING,Available TIMESTAMP,Address STRING,Incident_zipcode INT,Battalion STRING,Station_Area INT,Box INT,Original_Priority TINYINT,Priority TINYINT,Final_Priority TINYINT,ALS_Unit STRING,Call_Type_Group STRING,No_Alarms SMALLINT,Unit_Type STRING,Unit_sequence_in_call_dispatch SMALLINT,Fire_Prevention_District SMALLINT,Supervisor_District SMALLINT,Neighborhooods_Analysis_Boundaries STRING,Row_ID STRING,case_location STRING,data_as_of STRING,data_loaded_at TIMESTAMP,Analysis_Neighborhoods SMALLINT) 
+PARTITIONED BY (City STRING)
+CLUSTERED BY(callno) INTO 4 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC
+TBLPROPERTIES('transacational'='true');
+
+INSERT INTO fire_data PARTITION(city)
+SELECT callno ,unitid ,incidentno ,calltype ,calldate ,watchdate ,FROM_UNIXTIME(UNIX_TIMESTAMP(receivedtimestamp,'MM/dd/yyyy hh:mm:ss a')) ,FROM_UNIXTIME(UNIX_TIMESTAMP(entrytimestamp,'MM/dd/yyyy hh:mm:ss a'))  ,FROM_UNIXTIME(UNIX_TIMESTAMP(dispatch_timestamp,'MM/dd/yyyy hh:mm:ss a'))   ,FROM_UNIXTIME(UNIX_TIMESTAMP(response_timestamp,'MM/dd/yyyy hh:mm:ss a'))  ,FROM_UNIXTIME(UNIX_TIMESTAMP(on_scene_timestamp,'MM/dd/yyyy hh:mm:ss a'))  ,
+FROM_UNIXTIME(UNIX_TIMESTAMP(transport_timestamp,'MM/dd/yyyy hh:mm:ss a'))  ,FROM_UNIXTIME(UNIX_TIMESTAMP(hospital_timestamp,'MM/dd/yyyy hh:mm:ss a'))  ,Call_Final_Disposition ,Available ,Address,Incident_zipcode ,Battalion ,Station_Area ,Box ,Original_Priority ,Priority ,
+Final_Priority ,ALS_Unit ,Call_Type_Group ,No_Alarms ,Unit_Type ,Unit_sequence_in_call_dispatch ,Fire_Prevention_District ,Supervisor_District ,
+Neighborhooods_Analysis_Boundaries ,Row_ID ,case_location ,data_as_of ,data_loaded_at ,Analysis_Neighborhoods ,City 
+FROM fire_staging;
+
+SELECT Address, Incident_zipcode, Battalion, case_location, data_as_of
+FROM fire_data
+LIMIT 10;
+
+SELECT Call_Final_Disposition, Call_Type_Group, Original_Priority
+FROM fire_data
+LIMIT 10;
+
+SELECT callno, calldate, entrytimestamp
+FROM fire_data
+LIMIT 10;
